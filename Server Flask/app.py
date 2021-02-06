@@ -65,8 +65,15 @@ def create_user(uid):
     except :
         return "ERROR ! : User id : %r already exist" %uid
         
-#For munir based on the previous func create a route that create a router
-#ur code here
+@app.route('/create_router/<id>/<position>/',methods=['POST','GET'])
+def create_router(id,position):
+    new_router=Router(id=id,position=position)
+    try:
+        db.session.add(new_router)
+        db.session.commit()
+        return "The router : %r is successfully created" %id
+    except :
+        return "ERROR ! :  id router : %r already exist" %id
 
 
 @app.route('/contact/<main_uid>/<second_uid>',methods=['POST','GET'])
@@ -75,7 +82,7 @@ def in_contact(main_uid,second_uid):
     if Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first() != None:
         if Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first().date >= yesterday :
             return "Contact already exist for today"
-    new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now())
+    new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now()) #If not we create a new one for today
     try:
         db.session.add(new_contact)
         db.session.commit()
