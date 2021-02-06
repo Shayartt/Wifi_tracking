@@ -69,28 +69,19 @@ def create_user(uid):
 #ur code here
 
 
-
-# @app.route('/track/<uid>/<pos>',methods=['POST','GET'])
-# def track_user(uid,pos):
-#     new_tracked = Track_movement(user_uid=uid,position=str(pos),date=datetime.now())
-#     try:
-#         db.session.add(new_tracked)
-#         db.session.commit()
-#         return "Movement of user : %r is tracked with success" %uid
-#     except exc.SQLAlchemyError as e:
-#         return e
-
-
-
 @app.route('/contact/<main_uid>/<second_uid>',methods=['POST','GET'])
 def in_contact(main_uid,second_uid):
-    new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now())
-    try:
-        db.session.add(new_contact)
-        db.session.commit()
-        return "The contact between user : %r and the user : %r is saved !" %(main_uid,second_uid)
-    except exc.SQLAlchemyError as e:
-        return e
+    last_5days = datetime.now() - timedelta(days=1) #Check if we already have a contact in this day no need to create a new one
+    if Contact.query.filter_by(origin_user=main_uid).filter(other_user=second_uid).filter(date >= last_5days) != None:
+        return "Contact already exist for today"
+    else :
+        new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now())
+        try:
+            db.session.add(new_contact)
+            db.session.commit()
+            return "The contact between user : %r and the user : %r is saved !" %(main_uid,second_uid)
+        except exc.SQLAlchemyError as e:
+            return e
 
 @app.route('/all_users',methods=['POST','GET'])
 def all_users():
