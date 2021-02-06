@@ -4,6 +4,7 @@ import requests
 import pythoncom
 import who_is_on_my_wifi
 
+my_position = "(1654,3648)"
 def index():
     threading.Timer(300.0, index).start()
     pythoncom.CoInitialize()
@@ -15,7 +16,7 @@ def index():
             requests.get("http://127.0.0.1:5000/create_user/"+str(users_mac[i]))
             requests.get("http://127.0.0.1:5000/create_user/"+str(users_mac[j]))
             #Create contact
-            lien = "http://127.0.0.1:5000/contact/"+str(users_mac[i])+str(users_mac[j])
+            lien = "http://127.0.0.1:5000/contact/"+str(users_mac[i])+"/"+str(users_mac[j])+"/"+my_position
             requests.get(lien)
     return render_template('index.html')
     

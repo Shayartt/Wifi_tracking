@@ -37,6 +37,7 @@ class Contact(db.Model):
     id_contact = db.Column(db.Integer, primary_key=True, autoincrement=True)
     origin_user = db.Column(db.Integer, db.ForeignKey('user.uid')) # the current user
     other_user = db.Column(db.Integer, db.ForeignKey('user.uid')) # Users who was in contact with the current user (near to him)
+    position = db.Column(db.String(255), nullable=False)
     date = db.Column(db.DateTime) #Date of contact 
     
 # class Track_movement(db.Model):
@@ -76,13 +77,13 @@ def create_router(id,position):
         return "ERROR ! :  id router : %r already exist" %id
 
 
-@app.route('/contact/<main_uid>/<second_uid>',methods=['POST','GET'])
-def in_contact(main_uid,second_uid):
+@app.route('/contact/<main_uid>/<second_uid>/<router_position>',methods=['POST','GET'])
+def in_contact(main_uid,second_uid,router_position):
     yesterday = datetime.now() - timedelta(days=1) #Check if we already have a contact in this day no need to create a new one
     if Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first() != None:
-        if Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first().date >= yesterday :
+        if Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first().date >= yesterday and Contact.query.filter_by(origin_user=main_uid).filter_by(other_user=second_uid).first().position == router_position:
             return "Contact already exist for today"
-    new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now()) #If not we create a new one for today
+    new_contact = Contact(origin_user=main_uid,other_user=second_uid,date=datetime.now(),position=router_position) #If not we create a new one for today
     try:
         db.session.add(new_contact)
         db.session.commit()
@@ -103,8 +104,8 @@ def all_contact():
     for contact in all_contact:
         print(contact.origin_user)
         print("In contactt with :")
-        input(contact.other_user)
-    return "test"
+        print(contact.other_user)
+    return "Check Cmd"
 
 def fetch_contact(uid,date):
      #Get the users that were in contact with the current one who tested positive in the last 5 days
