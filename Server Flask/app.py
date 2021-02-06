@@ -21,7 +21,7 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 class User(db.Model):
-    uid = db.Column(db.Integer,primary_key=True) #For privacy reason we won't take any informations about the user
+    uid = db.Column(db.String(255),primary_key=True) #For privacy reason we won't take any informations about the user this is mac add
     CovidPositive = db.Column(db.Boolean, default=False, nullable=False) # Status of user
     warning = db.Column(db.Boolean, default=False, nullable=False) # if he was near to someone who tested positive
     def __repr__(self):
@@ -91,6 +91,13 @@ def in_contact(main_uid,second_uid):
         return "The contact between user : %r and the user : %r is saved !" %(main_uid,second_uid)
     except exc.SQLAlchemyError as e:
         return e
+
+@app.route('/all_users',methods=['POST','GET'])
+def all_users():
+    all_users =  User.query.all()
+    for user in all_users :
+        print(user)
+    return "CHeck "
 
 @app.route('/all_contact',methods=['POST','GET'])
 def all_contact():
