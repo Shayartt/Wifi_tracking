@@ -128,6 +128,13 @@ def notify_users():
             wanted_user.warning = True
             db.session.commit()
 
+@app.route('/warning/<uid>',methods=['POST','GET'])
+def warning_pos(uid):
+    warning_user = User.query.filter_by(uid=uid).first()
+    if warning_user.warning = True :
+        return "Be carefull you were near to someone who tested positive stay quarantine !"
+    else :
+        return "You're safe the last 5 days"
 
 
 if __name__ == "__main__":
