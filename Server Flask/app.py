@@ -47,13 +47,6 @@ class Contact(db.Model):
 
 @app.route('/',methods=['POST','GET'])
 def index():
-    pythoncom.CoInitialize() #The next lines sould be executed in the router make a function for Zafzafi
-    connected_list = who_is_on_my_wifi.who()
-    users_mac = [i[3] for i in connected_list]
-    for i in range(len(users_mac)):
-        for j in range(i+1,len(users_mac)):
-            #Before adding contact  : post two times to 127.0.0.1:5000/create_user/user_mac[i] then with user_mac[j]
-            in_contact(users_mac[i],users_mac[j]) #Replace with 127.0.0.1:5000/contact/user_mac[i]/user_mac[j]
     return render_template('index.html')
 
 @app.route('/create_user/<uid>',methods=['POST','GET'])
