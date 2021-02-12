@@ -47,6 +47,7 @@ class Contact(db.Model):
 
 @app.route('/',methods=['POST','GET'])
 def index():
+
     return render_template('index.html')
 
 @app.route('/create_user/<uid>',methods=['POST','GET'])
@@ -131,7 +132,7 @@ def notify_users():
 @app.route('/warning/<uid>',methods=['POST','GET'])
 def warning_pos(uid):
     warning_user = User.query.filter_by(uid=uid).first()
-    if warning_user.warning = True :
+    if warning_user.warning :
         return "Be carefull you were near to someone who tested positive stay quarantine !"
     else :
         return "You're safe the last 5 days"
