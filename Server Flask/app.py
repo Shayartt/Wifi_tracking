@@ -7,8 +7,9 @@ from flask_migrate import Migrate, MigrateCommand
 from datetime import datetime,timedelta
 import who_is_on_my_wifi
 import pythoncom
-import threading
+from apscheduler.schedulers.background import BackgroundScheduler
 import itertools
+import atexit
 
 app = Flask(__name__)
 
@@ -20,6 +21,7 @@ db = SQLAlchemy(app) #Define the database
 migrate =  Migrate(app,db) 
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+
 
 class User(db.Model):
     uid = db.Column(db.String(255),primary_key=True) #For privacy reason we won't take any informations about the user this is mac add
@@ -165,15 +167,24 @@ def warning_pos(uid):
         return {"data":False}
 
 def reset_warnings(): #The thread is not wokring fine
+    print("Start reseting")
     time_reset = datetime.now() - timedelta(days=15)
-    all_users = User.query.filter_by(warning_pos=True).all()
-    for user in all_users : 
-        print(user)
-        if user.warning_date >= time_reset :
-            user.warning_date = False
+    all_users = User.query.filter_by(warning=True).all()
+    for user in all_users :      
+        if user.warning_date <= time_reset :
+            print(user)
+            user.warning = False
             db.session.commit() #Update database
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=reset_warnings, trigger="interval", seconds=1) #Execute the function every 24h to reset the warning for users who were near to someone positive the last 15days
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown()) 
+
 
 if __name__ == "__main__":
     app.run(debug=True)
     manager.run() #For migrations
-    threading.Timer(1, reset_warnings).start() #Execute the function every 24h to reset the warning for users who were near to someone positive the last 15days
+    threading.Timer(1, reset_warnings).start() 
