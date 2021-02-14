@@ -112,19 +112,17 @@ def covid_pos(uid):
     # !!! You need to check if the used exist cz it throws an error if user not found
     current_user = User.query.filter_by(uid=uid).first() #Get the current user
     if current_user is None:
-        return {"data" : False }
+        create_user(uid)
+        current_user = User.query.filter_by(uid=uid).first()
     current_user.CovidPositive = True #Change status to positive
     db.session.commit() #Update database
-    users_contact = fetch_contact(uid,datetime.now()) #Look for users who were in contact for the last 5 days
-    result_users = []
-    for user in users_contact: #Store the uid of fetched users
-        result_users.append(user.other_user)
-    return str(result_users) #Return the uid as a list 
+    notify_users()
+    return {"data" : True } #Return the uid as a list 
 
 
 def notify_users():
     #We need to loop over users who have state positive then get the id store it in uid
-    positive_users = User.query.filter_by(covid_pos=True).all()
+    positive_users = User.query.filter_by(CovidPositive=True).all()
     for pos_user in positive_users :  
         fetched_contact = fetch_contact(pos_user.uid,datetime.now()) #Get the users who were in contact with the positive one
         for in_contact in fetched_contact: #In this loop we notify
@@ -137,7 +135,9 @@ def warning_pos(uid):
     warning_user = User.query.filter_by(uid=uid).first()
     if warning_user is None:
         return {"data":False}
-    if warning_user.warning :
+    if warning_user.CovidPositive :
+        return {"data":"Positive"}
+    elif warning_user.warning or warning_user.CovidPositive :
         return {"data":True}
     else :
         return {"data":False}
