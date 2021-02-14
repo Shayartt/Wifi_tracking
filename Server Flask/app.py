@@ -122,6 +122,17 @@ def covid_pos(uid):
     notify_users()
     return {"data" : True } #Return the uid as a list 
 
+@app.route('/covid_neg/<uid>',methods=['POST','GET'])
+def covid_neg(uid):
+    # !!! You need to check if the used exist cz it throws an error if user not found
+    current_user = User.query.filter_by(uid=uid).first() #Get the current user
+    if current_user is None:
+        create_user(uid)
+        current_user = User.query.filter_by(uid=uid).first()
+    current_user.CovidPositive = False #Change status to positive
+    db.session.commit() #Update database
+    return {"data" : True } #Return the uid as a list 
+
 
 def notify_users():
     #We need to loop over users who have state positive then get the id store it in uid
