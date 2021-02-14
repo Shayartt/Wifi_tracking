@@ -167,7 +167,7 @@ def warning_pos(uid):
         return {"data":False}
 
 def reset_warnings(): #The thread is not wokring fine
-    print("Start reseting")
+    print("Start reseting warnings")
     time_reset = datetime.now() - timedelta(days=15)
     all_users = User.query.filter_by(warning=True).all()
     for user in all_users :      
@@ -175,9 +175,20 @@ def reset_warnings(): #The thread is not wokring fine
             print(user)
             user.warning = False
             db.session.commit() #Update database
+def reset_contact():
+    print("Start reseting Contact")
+    time_reset = datetime.now() - timedelta(days=15)
+    all_contacts = Contact.query.all()
+    for contact in all_contacts:
+        if contact.date <= time_reset:
+            db.session.delete(contact)
+            print(str(contact)+" Has been deleted")
+            db.session.commit()
+
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=reset_warnings, trigger="interval", seconds=1) #Execute the function every 24h to reset the warning for users who were near to someone positive the last 15days
+scheduler.add_job(func=reset_warnings, trigger="interval", seconds=86400) #Execute the function every 24h to reset the warning for users who were near to someone positive the last 15days
+scheduler.add_job(func=reset_contact, trigger="interval", seconds=86400)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app
@@ -187,4 +198,3 @@ atexit.register(lambda: scheduler.shutdown())
 if __name__ == "__main__":
     app.run(debug=True)
     manager.run() #For migrations
-    threading.Timer(1, reset_warnings).start() 
