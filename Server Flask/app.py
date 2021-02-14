@@ -50,6 +50,7 @@ class Contact(db.Model):
 
 @app.route('/',methods=['POST','GET'])
 def index():
+    notify_users()
     return render_template('index.html')
 
 @app.route('/create_user/<uid>',methods=['POST','GET'])
@@ -106,7 +107,8 @@ def all_contact():
 def fetch_contact(uid,date):
      #Get the users that were in contact with the current one who tested positive in the last 5 days
     last_5days = date - timedelta(days=5)
-    users_contact = Contact.query.filter_by(origin_user=uid).filter(date >= last_5days).all() #To verify if the date condition work fine
+    #users_contact = Contact.query.filter_by(origin_user=uid).filter(date >= last_5days).all() #To verify if the date condition work fine
+    users_contact = Contact.query.filter((Contact.origin_user==uid) | (Contact.other_user==uid) & (Contact.date >= last_5days)).all()
     return users_contact
 
 @app.route('/covid/<uid>',methods=['POST','GET'])
@@ -140,11 +142,15 @@ def notify_users():
     for pos_user in positive_users :  
         fetched_contact = fetch_contact(pos_user.uid,datetime.now()) #Get the users who were in contact with the positive one
         for in_contact in fetched_contact: #In this loop we notify
-            wanted_user = User.query.filter_by(uid=in_contact.other_user).first()
+            wanted_user = User.query.filter((User.uid==in_contact.origin_user)).first() #Two time because he may be the origin user or the other one and even if u do or inside one query won't work because she will always get the same users and ignore some
             wanted_user.warning = True
-            print(wanted_user.uid)
             wanted_user.warning_date = datetime.now()
             db.session.commit()
+            wanted_user = User.query.filter(User.uid == in_contact.other_user).first()
+            wanted_user.warning = True
+            db.session.commit()
+            wanted_user.warning_date = datetime.now()
+            
 
 @app.route('/warning/<uid>',methods=['POST','GET'])
 def warning_pos(uid):
