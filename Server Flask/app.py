@@ -7,6 +7,7 @@ from flask_migrate import Migrate, MigrateCommand
 from datetime import datetime,timedelta
 import who_is_on_my_wifi
 import pythoncom
+import threading
 import itertools
 
 app = Flask(__name__)
@@ -24,6 +25,8 @@ class User(db.Model):
     uid = db.Column(db.String(255),primary_key=True) #For privacy reason we won't take any informations about the user this is mac add
     CovidPositive = db.Column(db.Boolean, default=False, nullable=False) # Status of user
     warning = db.Column(db.Boolean, default=False, nullable=False) # if he was near to someone who tested positive
+    positive_date = db.Column(db.DateTime)
+    warning_date = db.Column(db.DateTime) #Last time was near to someone who tested positive
     def __repr__(self):
         return "<User : %r>" %self.uid
 
@@ -47,7 +50,6 @@ class Contact(db.Model):
 
 @app.route('/',methods=['POST','GET'])
 def index():
-
     return render_template('index.html')
 
 @app.route('/create_user/<uid>',methods=['POST','GET'])
@@ -115,6 +117,7 @@ def covid_pos(uid):
         create_user(uid)
         current_user = User.query.filter_by(uid=uid).first()
     current_user.CovidPositive = True #Change status to positive
+    current_user.positive_date = datetime.now() #Date of test
     db.session.commit() #Update database
     notify_users()
     return {"data" : True } #Return the uid as a list 
@@ -128,6 +131,8 @@ def notify_users():
         for in_contact in fetched_contact: #In this loop we notify
             wanted_user = User.query.filter_by(uid=in_contact.other_user).first()
             wanted_user.warning = True
+            print(wanted_user.uid)
+            wanted_user.warning_date = datetime.now()
             db.session.commit()
 
 @app.route('/warning/<uid>',methods=['POST','GET'])
@@ -142,8 +147,16 @@ def warning_pos(uid):
     else :
         return {"data":False}
 
+def reset_warnings(): #The thread is not wokring fine
+    time_reset = datetime.now() - timedelta(days=15)
+    all_users = User.query.filter_by(warning_pos=True).all()
+    for user in all_users : 
+        print(user)
+        if user.warning_date >= time_reset :
+            user.warning_date = False
+            db.session.commit() #Update database
 
 if __name__ == "__main__":
     app.run(debug=True)
     manager.run() #For migrations
-    
+    threading.Timer(1, reset_warnings).start() #Execute the function every 24h to reset the warning for users who were near to someone positive the last 15days
