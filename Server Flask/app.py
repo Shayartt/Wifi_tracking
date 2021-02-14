@@ -126,7 +126,7 @@ def covid_pos(uid):
     notify_users()
     return {"data" : True } #Return the uid as a list 
 
-@app.route('/covid_neg/<uid>',methods=['POST','GET'])
+@app.route('/covid-neg/<uid>',methods=['POST','GET'])
 def covid_neg(uid):
     # !!! You need to check if the used exist cz it throws an error if user not found
     current_user = User.query.filter_by(uid=uid).first() #Get the current user
