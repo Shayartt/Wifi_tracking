@@ -166,7 +166,7 @@ def warning_pos(uid):
     else :
         return {"data":False}
 
-def reset_warnings(): #The thread is not wokring fine
+def reset_warnings():
     print("Start reseting warnings")
     time_reset = datetime.now() - timedelta(days=15)
     all_users = User.query.filter_by(warning=True).all()
