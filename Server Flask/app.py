@@ -175,7 +175,8 @@ def reset_warnings(): #The thread is not wokring fine
             print(user)
             user.warning = False
             db.session.commit() #Update database
-def reset_contact():
+
+def reset_contact(): #Delete contact every 15days
     print("Start reseting Contact")
     time_reset = datetime.now() - timedelta(days=15)
     all_contacts = Contact.query.all()
