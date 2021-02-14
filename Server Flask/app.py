@@ -110,8 +110,9 @@ def fetch_contact(uid,date):
 @app.route('/covid/<uid>',methods=['POST','GET'])
 def covid_pos(uid):
     # !!! You need to check if the used exist cz it throws an error if user not found
-    print(uid)
     current_user = User.query.filter_by(uid=uid).first() #Get the current user
+    if current_user is None:
+        return {"data" : False }
     current_user.CovidPositive = True #Change status to positive
     db.session.commit() #Update database
     users_contact = fetch_contact(uid,datetime.now()) #Look for users who were in contact for the last 5 days
@@ -134,10 +135,12 @@ def notify_users():
 @app.route('/warning/<uid>',methods=['POST','GET'])
 def warning_pos(uid):
     warning_user = User.query.filter_by(uid=uid).first()
+    if warning_user is None:
+        return {"data":False}
     if warning_user.warning :
-        return "Be carefull you were near to someone who tested positive stay quarantine !"
+        return {"data":True}
     else :
-        return "You're safe the last 5 days"
+        return {"data":False}
 
 
 if __name__ == "__main__":
