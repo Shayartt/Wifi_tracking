@@ -35,7 +35,7 @@ class User(db.Model):
 
 class Router(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    position = db.Column(db.String(255), nullable=False) #Khalid try to do something for this position we don't wanna to do it manually with random data
+    position = db.Column(db.String(255), nullable=False) 
 
 
 class Contact(db.Model):
@@ -115,7 +115,7 @@ def fetch_contact(uid,date):
 
 @app.route('/covid/<uid>',methods=['POST','GET'])
 def covid_pos(uid):
-    # !!! You need to check if the used exist cz it throws an error if user not found
+  
     current_user = User.query.filter_by(uid=uid).first() #Get the current user
     if current_user is None:
         create_user(uid)
